@@ -105,51 +105,68 @@ class Uploader:
 
             task.status = "Uploading"
             start_time = time.time()
-            uploaded_bytes = 0
 
-            for chunk_path, chunk_index, chunk_hash in chunks:
-                if self.cancel_requested:
-                    task.status = "Cancelled"
-                    break
+            active_uploads = {}
+            for _, idx, _ in chunks:
+                active_uploads[idx] = 0
 
-                chunk_size = os.path.getsize(chunk_path)
-                
-                def chunk_progress(current, total):
-                    nonlocal uploaded_bytes
-                    current_uploaded = uploaded_bytes + current
-                    task.progress = int((current_uploaded / task.size) * 100)
-                    elapsed = time.time() - start_time
-                    if elapsed > 0:
-                        task.speed = current_uploaded / elapsed
+            db_lock = asyncio.Lock()
+
+            async def upload_single_chunk(sem, chunk_path, chunk_index, chunk_hash):
+                async with sem:
+                    if self.cancel_requested:
+                        return
+
+                    chunk_size = os.path.getsize(chunk_path)
+
+                    def chunk_progress(current, total):
+                        active_uploads[chunk_index] = current
+                        total_uploaded = sum(active_uploads.values())
+                        task.progress = int((total_uploaded / task.size) * 100)
+                        elapsed = time.time() - start_time
+                        if elapsed > 0:
+                            task.speed = total_uploaded / elapsed
+                        if progress_cb:
+                            progress_cb(task)
+
+                    res = await self.client.upload_chunk(chunk_path, chunk_progress)
+                    if not res:
+                        raise Exception(f"Failed to upload chunk {chunk_index}")
+
+                    active_uploads[chunk_index] = chunk_size
+                    total_uploaded = sum(active_uploads.values())
+                    task.progress = int((total_uploaded / task.size) * 100)
                     if progress_cb:
                         progress_cb(task)
 
-                res = await self.client.upload_chunk(chunk_path, chunk_progress)
-                if not res:
-                    raise Exception(f"Failed to upload chunk {chunk_index}")
+                    async with db_lock:
+                        self.db.add_file({
+                            "filename": os.path.basename(task.file_path),
+                            "size": task.size,
+                            "type": os.path.splitext(task.file_path)[1].lower().strip("."),
+                            "upload_date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                            "telegram_message_id": res["message_id"],
+                            "telegram_file_id": res["file_id"],
+                            "chunk_index": chunk_index,
+                            "total_chunks": total_chunks,
+                            "encrypted": is_encrypted,
+                            "hash": file_hash,
+                            "local_cache_path": "",
+                            "tags": "",
+                            "favorite": 0
+                        })
 
-                uploaded_bytes += chunk_size
-                
-                self.db.add_file({
-                    "filename": os.path.basename(task.file_path),
-                    "size": task.size,
-                    "type": os.path.splitext(task.file_path)[1].lower().strip("."),
-                    "upload_date": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "telegram_message_id": res["message_id"],
-                    "telegram_file_id": res["file_id"],
-                    "chunk_index": chunk_index,
-                    "total_chunks": total_chunks,
-                    "encrypted": is_encrypted,
-                    "hash": file_hash,
-                    "local_cache_path": "",
-                    "tags": "",
-                    "favorite": 0
-                })
+                    try:
+                        os.remove(chunk_path)
+                    except Exception:
+                        pass
 
-                try:
-                    os.remove(chunk_path)
-                except Exception:
-                    pass
+            sem = asyncio.Semaphore(3)
+            tasks = [
+                upload_single_chunk(sem, chunk_path, chunk_index, chunk_hash)
+                for chunk_path, chunk_index, chunk_hash in chunks
+            ]
+            await asyncio.gather(*tasks)
 
         finally:
             for chunk_path, _, _ in chunks:

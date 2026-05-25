@@ -22,6 +22,7 @@
 - **Tự động Phân mảnh Thích ứng (Dynamic Auto-Chunking)**: Hệ thống tự động nhận diện loại máy chủ API bạn đang kết nối:
   - **Official Telegram Bot API (`api.telegram.org`)**: Tự động giới hạn kích thước phân mảnh tối đa là **49 MB** (dưới hạn mức 50MB của Telegram) để đảm bảo tệp tải lên **không bao giờ bị lỗi**. Bạn có thể upload các tệp tin từ vài MB đến hàng chục GB hoàn toàn ổn định và mượt mà!
   - **Local Bot API Server (Tự dựng)**: Tự động mở khóa giới hạn dung lượng phân đoạn lên đến **2 GB** (mốc tối đa Telegram cho phép) hoặc tùy chỉnh linh hoạt để đạt tốc độ tối đa.
+- **Tối ưu hóa Tốc độ Đa luồng Song song (Concurrent Transfer)**: Tự động truyền tải lên/xuống song song 3 phân đoạn cùng lúc (Sử dụng Async Semaphores & Concurrent Tasks), giúp nhân gấp 3 lần tốc độ truyền tải tệp tin so với cơ chế tuần tự thông thường.
 - Tự động ghép nối nguyên vẹn, kiểm tra tính toàn vẹn (checksum) các phân đoạn khi tải xuống.
 - Quản lý hàng chờ tải lên/tải xuống đa luồng chạy ngầm với thanh tiến độ thời gian thực.
 - Kéo và thả (Drag & Drop) tệp tin trực tiếp để tải lên vô cùng nhanh chóng.

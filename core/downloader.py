@@ -78,39 +78,57 @@ class Downloader:
         downloaded_bytes = 0
         start_time = time.time()
 
+        active_downloads = {}
         for chunk in chunks:
-            if self.cancel_requested:
-                task.status = "Cancelled"
-                break
-
             chunk_filename = f"{task.filename}.part{chunk['chunk_index']}"
             chunk_path = os.path.join(temp_dir, chunk_filename)
             chunk_paths.append(chunk_path)
-
             if os.path.exists(chunk_path):
-                existing_size = os.path.getsize(chunk_path)
-                downloaded_bytes += existing_size
-                continue
+                active_downloads[chunk['chunk_index']] = os.path.getsize(chunk_path)
+            else:
+                active_downloads[chunk['chunk_index']] = 0
 
-            task.status = f"Downloading Part {chunk['chunk_index'] + 1}/{len(chunks)}"
-            if progress_cb:
-                progress_cb(task)
+        async def download_single_chunk(sem, chunk):
+            async with sem:
+                if self.cancel_requested:
+                    return
 
-            def chunk_progress(current, total):
-                nonlocal downloaded_bytes
-                current_downloaded = downloaded_bytes + current
-                task.progress = int((current_downloaded / task.size) * 100)
-                elapsed = time.time() - start_time
-                if elapsed > 0:
-                    task.speed = current_downloaded / elapsed
+                chunk_filename = f"{task.filename}.part{chunk['chunk_index']}"
+                chunk_path = os.path.join(temp_dir, chunk_filename)
+
+                if os.path.exists(chunk_path):
+                    return
+
+                def chunk_progress(current, total):
+                    active_downloads[chunk['chunk_index']] = current
+                    total_downloaded = sum(active_downloads.values())
+                    task.progress = int((total_downloaded / task.size) * 100)
+                    elapsed = time.time() - start_time
+                    if elapsed > 0:
+                        task.speed = total_downloaded / elapsed
+                    if progress_cb:
+                        progress_cb(task)
+
+                success = await self.client.download_chunk(chunk["telegram_file_id"], chunk_path, chunk_progress)
+                if not success:
+                    raise Exception(f"Failed to download chunk {chunk['chunk_index']}")
+
+                active_downloads[chunk['chunk_index']] = os.path.getsize(chunk_path)
+                total_downloaded = sum(active_downloads.values())
+                task.progress = int((total_downloaded / task.size) * 100)
                 if progress_cb:
                     progress_cb(task)
 
-            success = await self.client.download_chunk(chunk["telegram_file_id"], chunk_path, chunk_progress)
-            if not success:
-                raise Exception(f"Failed to download chunk {chunk['chunk_index']}")
+        task.status = "Downloading"
+        if progress_cb:
+            progress_cb(task)
 
-            downloaded_bytes += os.path.getsize(chunk_path)
+        sem = asyncio.Semaphore(3)
+        tasks = [
+            download_single_chunk(sem, chunk)
+            for chunk in chunks
+        ]
+        await asyncio.gather(*tasks)
 
         if self.cancel_requested:
             return
