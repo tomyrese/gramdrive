@@ -282,7 +282,7 @@ class SettingsPage(QWidget):
         db = self.file_manager.db
         token = self.token_input.text().strip()
         if not token:
-            FramelessMessageBox.show_warning(self, "Bot Listener", "Please enter a Bot Token first.")
+            FramelessMessageBox.show_warning(self, self.get_text("msg_bot_listener"), self.get_text("msg_enter_token"))
             return
 
         client = self.file_manager.client
@@ -318,13 +318,13 @@ class SettingsPage(QWidget):
         db.save_setting("theme", theme_val)
 
         self.save_callback()
-        FramelessMessageBox.show_info(self, "Settings", "Settings saved successfully")
+        FramelessMessageBox.show_info(self, self.get_text("msg_settings"), self.get_text("msg_settings_saved"))
 
     def test_connection(self):
         token = self.token_input.text().strip()
         chat_id = self.chat_input.text().strip()
         if not token or not chat_id:
-            FramelessMessageBox.show_warning(self, "Test Connection", "Please fill in Token and Chat ID first.")
+            FramelessMessageBox.show_warning(self, self.get_text("msg_test_conn"), self.get_text("msg_fill_credentials"))
             return
 
         async def run_test():
@@ -337,9 +337,9 @@ class SettingsPage(QWidget):
                     db.save_setting("bot_token", token)
                     db.save_setting("chat_id", chat_id)
                     self.save_callback()
-                    FramelessMessageBox.show_info(self, "Test Connection", "Connection Successful! The bot is active.")
+                    FramelessMessageBox.show_info(self, self.get_text("msg_test_conn"), self.get_text("msg_conn_success"))
                 else:
-                    FramelessMessageBox.show_critical(self, "Test Connection", "Connection Failed. Check your Token or Internet connection.")
+                    FramelessMessageBox.show_critical(self, self.get_text("msg_test_conn"), self.get_text("msg_conn_failed"))
             show_result()
 
         import asyncio
@@ -349,7 +349,7 @@ class SettingsPage(QWidget):
         path, _ = QFileDialog.getSaveFileName(self, "Backup Database", "", "SQLite Database (*.db)")
         if path:
             self.file_manager.db.backup_database(path)
-            FramelessMessageBox.show_info(self, "Backup", "Database backup completed successfully")
+            FramelessMessageBox.show_info(self, self.get_text("msg_backup"), self.get_text("msg_backup_success"))
 
     def restore_db(self):
         path, _ = QFileDialog.getOpenFileName(self, "Restore Database", "", "SQLite Database (*.db)")
@@ -357,7 +357,7 @@ class SettingsPage(QWidget):
             self.file_manager.db.restore_database(path)
             self.load_settings()
             self.save_callback()
-            FramelessMessageBox.show_info(self, "Restore", "Database restored successfully. Settings reloaded.")
+            FramelessMessageBox.show_info(self, self.get_text("msg_restore"), self.get_text("msg_restore_success"))
 
     def toggle_passphrase_visibility(self):
         if self.key_input.echoMode() == QLineEdit.Password:

@@ -239,14 +239,15 @@ class ExplorerPage(QWidget):
         self.refresh_table()
 
     def export_csv(self):
-        path, _ = QFileDialog.getSaveFileName(self, "Export Metadata", "", "CSV Files (*.csv)")
+        path, _ = QFileDialog.getSaveFileName(self, self.get_text("msg_export"), "", "CSV Files (*.csv)")
         if path:
             self.file_manager.export_metadata_csv(path)
-            FramelessMessageBox.show_info(self, "Export Complete", f"Metadata successfully exported to {os.path.basename(path)}")
+            msg_text = self.get_text("msg_export_success").format(filename=os.path.basename(path))
+            FramelessMessageBox.show_info(self, self.get_text("msg_export"), msg_text)
 
     def import_csv(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Import Metadata", "", "CSV Files (*.csv)")
+        path, _ = QFileDialog.getOpenFileName(self, self.get_text("msg_import"), "", "CSV Files (*.csv)")
         if path:
             self.file_manager.import_metadata_csv(path)
             self.refresh_table()
-            FramelessMessageBox.show_info(self, "Import Complete", "Metadata successfully imported into database")
+            FramelessMessageBox.show_info(self, self.get_text("msg_import"), self.get_text("msg_import_success"))

@@ -24,8 +24,14 @@ class MainWindow(QMainWindow):
         self.setup_tray()
         self.check_connection()
 
+    def get_resource_path(self, relative_path: str) -> str:
+        import sys
+        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+        return os.path.join(base_path, relative_path)
+
     def init_ui(self):
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowIcon(QIcon(self.get_resource_path("icon.ico")))
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -144,7 +150,7 @@ class MainWindow(QMainWindow):
             except Exception:
                 active_theme = "dark"
         
-        qss_path = f"config/themes/{active_theme}_glass.qss"
+        qss_path = self.get_resource_path(f"config/themes/{active_theme}_glass.qss")
         if os.path.exists(qss_path):
             with open(qss_path, "r") as f:
                 self.setStyleSheet(f.read())
@@ -215,7 +221,7 @@ class MainWindow(QMainWindow):
     def setup_tray(self):
         self.tray_icon = QSystemTrayIcon(self)
         
-        icon_path = "gui/assets/logo.png"
+        icon_path = self.get_resource_path("icon.ico")
         if os.path.exists(icon_path):
             self.tray_icon.setIcon(QIcon(icon_path))
         else:
