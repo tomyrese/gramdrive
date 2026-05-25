@@ -67,7 +67,7 @@ class Uploader:
     async def _upload_file(self, task: UploadTask, progress_cb: Optional[Callable[[UploadTask], None]]) -> None:
         encrypt_enabled = self.db.get_setting("encryption_enabled", "0") == "1"
         passphrase = self.db.get_setting("encryption_key", "")
-        chunk_size_setting = int(self.db.get_setting("chunk_size", str(40 * 1024 * 1024)))
+        chunk_size_setting = int(self.db.get_setting("chunk_size", str(2 * 1024 * 1024 * 1024)))
 
         temp_dir = "temp/upload"
         os.makedirs(temp_dir, exist_ok=True)

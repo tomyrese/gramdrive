@@ -123,7 +123,7 @@ class SettingsPage(QWidget):
         limits_layout.addWidget(self.limits_title_lbl)
 
         self.chunk_combo = QComboBox()
-        self.chunk_combo.addItems(["10 MB", "20 MB", "40 MB", "49 MB"])
+        self.chunk_combo.addItems(["1 GB", "2 GB", "4 GB", "5 GB", "10 GB"])
         self.lbl_chunk_size = QLabel()
         limits_layout.addWidget(self.lbl_chunk_size)
         limits_layout.addWidget(self.chunk_combo)
@@ -254,16 +254,10 @@ class SettingsPage(QWidget):
         self.enc_checkbox.setChecked(db.get_setting("encryption_enabled", "0") == "1")
         self.key_input.setText(db.get_setting("encryption_key", ""))
         
-        chunk_size = int(db.get_setting("chunk_size", str(40 * 1024 * 1024)))
-        mb = chunk_size // (1024 * 1024)
-        if mb == 10:
-            self.chunk_combo.setCurrentIndex(0)
-        elif mb == 20:
-            self.chunk_combo.setCurrentIndex(1)
-        elif mb == 40:
-            self.chunk_combo.setCurrentIndex(2)
-        elif mb == 49:
-            self.chunk_combo.setCurrentIndex(3)
+        chunk_size = int(db.get_setting("chunk_size", str(2 * 1024 * 1024 * 1024)))
+        gb = chunk_size // (1024 * 1024 * 1024)
+        gb_map = {1: 0, 2: 1, 4: 2, 5: 3, 10: 4}
+        self.chunk_combo.setCurrentIndex(gb_map.get(gb, 1))
 
         lang = db.get_setting("language", "vi")
         self.lang_combo.setCurrentIndex(0 if lang == "vi" else 1)
@@ -307,9 +301,9 @@ class SettingsPage(QWidget):
         db.save_setting("encryption_enabled", "1" if self.enc_checkbox.isChecked() else "0")
         db.save_setting("encryption_key", self.key_input.text().strip())
 
-        mb_choices = [10, 20, 40, 49]
-        mb = mb_choices[self.chunk_combo.currentIndex()]
-        db.save_setting("chunk_size", str(mb * 1024 * 1024))
+        gb_choices = [1, 2, 4, 5, 10]
+        gb = gb_choices[self.chunk_combo.currentIndex()]
+        db.save_setting("chunk_size", str(gb * 1024 * 1024 * 1024))
 
         db.save_setting("language", "vi" if self.lang_combo.currentIndex() == 0 else "en")
 

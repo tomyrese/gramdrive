@@ -1,90 +1,167 @@
 # GramDrive - Secure Telegram Cloud Storage Manager
 
-GramDrive là ứng dụng quản lý ổ đĩa đám mây bảo mật cá nhân hoạt động dựa trên API Telegram, được thiết kế với giao diện kính mờ Apple Liquid Glass cao cấp, hoàn toàn không viền (frameless) và bo tròn các góc tinh tế.
+[![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![GUI Framework](https://img.shields.io/badge/UI-PySide6%20%2F%20Qt6-orange.svg)](https://doc.qt.io/qtforpython-6/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Ứng dụng cho phép biến không gian chat lưu trữ của Telegram Bot thành một ổ đĩa đám mây riêng tư có dung lượng lưu trữ không giới hạn, bảo mật tuyệt đối nhờ cơ chế mã hóa AES-256 đầu cuối trực tiếp từ thiết bị.
+**GramDrive** là ứng dụng khách (Client) trên máy tính chạy hệ điều hành Windows, giúp biến bộ nhớ lưu trữ của Telegram thành một ổ đĩa đám mây bảo mật, riêng tư với dung lượng không giới hạn hoàn toàn miễn phí. 
 
----
-
-## Các tính năng nổi bật
-
-- **Giao diện Apple Glassmorphism**: Thiết kế kính mờ cao cấp, hỗ trợ chế độ Sáng/Tối (Light/Dark Mode) và chuyển đổi động theo hệ thống hệ điều hành.
-- **Dung lượng tệp tin không giới hạn**: Cơ chế tự động phân tách tệp tin lớn thành các phân đoạn (chunk) nhỏ hơn 50MB trước khi tải lên và tự động ghép nối nguyên vẹn khi tải xuống.
-- **Bảo mật tuyệt đối AES-256**: Mã hóa tệp tin trực tiếp phía client (Client-side encryption) bằng mật khẩu Master trước khi đẩy lên đám mây, đảm bảo ngay cả Telegram cũng không thể đọc nội dung tệp tin của bạn.
-- **Lắng nghe lệnh Bot tự động**: Tích hợp bộ lắng nghe cập nhật lệnh Telegram trực tiếp. Người dùng chỉ cần gửi lệnh `/id` đến bot để lấy mã Chat ID cá nhân một cách nhanh chóng.
-- **Bản địa hóa động (VI/EN)**: Dịch chuyển đổi động toàn diện giao diện từ ngoài vào trong bao gồm bảng dữ liệu, tiêu đề và gợi ý nhập liệu.
-- **Thanh chọn không đứt đoạn (Continuous Table Highlights)**: Bảng tệp tin hiển thị dạng kính phẳng không viền, làm nổi bật hàng được chọn liên mạch.
+Được xây dựng trên triết lý thiết kế **Apple Liquid Glassmorphism** (kính mờ tràn viền cực kỳ sang trọng), GramDrive đem lại trải nghiệm quản lý tệp tin cao cấp và mượt mà, đồng thời bảo mật tuyệt đối dữ liệu cá nhân của bạn thông qua cơ chế mã hóa AES-256 trực tiếp ở phía người dùng (Client-side encryption).
 
 ---
 
-## Yêu cầu hệ thống
+## ✨ Điểm Nổi Bật & Tính Năng
 
-- **Hệ điều hành**: Windows 10/11
-- **Python**: Phiên bản 3.11.9 (Khuyến nghị)
-- **Telegram Account**: Đã đăng ký và hoạt động.
+### 🎨 Giao diện Kính mờ tràn viền (Liquid Glassmorphism)
+- Thiết kế không viền (Frameless Window) kết hợp với các góc bo tròn tinh tế và đổ bóng mềm mại.
+- Hiệu ứng kính mờ (Translucent overlay) tạo cảm giác chiều sâu cao cấp trên mọi nền màn hình.
+- Hỗ trợ đổi giao diện **Sáng/Tối (Light/Dark Mode)** linh hoạt với sự hòa quyện màu sắc tinh tế, tránh hiện tượng chói mắt.
+- Bảng tệp tin dạng kính phẳng với thanh chọn liền mạch không đứt đoạn (Continuous Table Highlights).
+
+### 🚀 Lưu trữ Không Giới Hạn & Phân Mảnh Thông Minh
+- Tự động chia nhỏ các tệp tin lớn thành các phân đoạn (chunk) với kích thước tùy cấu hình (từ **1 GB đến 10 GB**) để phù hợp tối đa với các hệ thống Telegram Local Bot API.
+- Tự động ghép nối nguyên vẹn, kiểm tra tính toàn vẹn (checksum) các phân đoạn khi tải xuống.
+- Quản lý hàng chờ tải lên/tải xuống đa luồng chạy ngầm với thanh tiến độ thời gian thực.
+- Kéo và thả (Drag & Drop) tệp tin trực tiếp để tải lên vô cùng nhanh chóng.
+
+### 🔒 Bảo mật Tuyệt Đối với Mã hóa AES-256 Đầu Cuối
+- Dữ liệu được mã hóa trực tiếp bằng thuật toán **AES-256-CBC** ngay trên máy tính của bạn trước khi đẩy lên Telegram.
+- Ngăn chặn hoàn toàn việc Telegram quét hoặc đọc nội dung tệp tin của bạn. Không ai có thể giải mã nếu không có mật khẩu Master Key do bạn giữ.
+
+### 🛠️ Lắng Nghe Lệnh Bot Tự Động (Auto-Listener)
+- Tích hợp bộ lắng nghe cập nhật lệnh Telegram trực tiếp.
+- Người dùng chỉ cần nhấn **Bắt đầu lắng nghe** trên cài đặt ứng dụng rồi gửi lệnh `/id` tới Bot cá nhân trên Telegram. Hệ thống sẽ tự động bắt lấy mã **Chat ID** của bạn để cấu hình kết nối tự động.
+- Kiểm tra kết nối nhanh chóng (Test Bot Connection) bằng một chạm.
+
+### 🌐 Bản Địa Hóa Động Toàn Diện
+- Hỗ trợ song ngữ **Tiếng Việt** và **Tiếng Anh**.
+- Chuyển đổi ngôn ngữ tức thời không cần khởi động lại ứng dụng, đồng bộ toàn bộ giao diện từ menu, bảng dữ liệu, tiêu đề cho đến các hộp thoại cảnh báo.
+
+### 📁 Quản lý Dữ liệu Tiện Lợi
+- **Dashboard**: Thống kê trực quan dung lượng đã sử dụng, số lượng tệp tin và biểu đồ danh mục định dạng tệp tin.
+- **File Explorer**: Duyệt tệp tin dạng danh sách, tìm kiếm thời gian thực, xóa tệp tin, sao chép link tệp tin.
+- **Backup & Restore**: Hỗ trợ xuất/nhập danh sách tệp tin (Metadata) và sao lưu/khôi phục toàn bộ cấu hình cài đặt chỉ bằng 1 file JSON duy nhất.
 
 ---
 
-## Hướng dẫn cài đặt và thiết lập nhanh
+## 🛠️ Yêu cầu Hệ thống
 
-### Bước 1: Tạo Telegram Bot cá nhân
-1. Mở ứng dụng Telegram, tìm kiếm và truy cập vào **@BotFather**.
-2. Gửi lệnh `/newbot` và đặt tên cho Bot của bạn.
-3. Sao chép chuỗi mã **Bot Token** được cấp (ví dụ: `123456789:ABCdef...`).
+- **Hệ điều hành**: Windows 10 hoặc Windows 11.
+- **Python**: Phiên bản 3.11.9 (Khuyến nghị để chạy từ mã nguồn).
 
-### Bước 2: Clone dự án và cài đặt thư viện
-1. Tải toàn bộ mã nguồn của dự án về máy tính.
-2. Mở terminal tại thư mục dự án và chạy lệnh sau để cài đặt các gói thư viện cần thiết:
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-### Bước 3: Khởi động ứng dụng
-Chạy lệnh khởi động giao diện phần mềm:
+## 📦 Hướng Dẫn Cài Đặt & Sử Dụng
+
+### Cách 1: Sử dụng Bản đóng gói sẵn (`GramDrive.exe`) - Khuyên dùng cho Người dùng
+1. Truy cập vào trang [Releases của GramDrive](https://github.com/tomyrese/gramdrive/releases).
+2. Tải về file `GramDrive.exe` phiên bản mới nhất.
+3. Chạy trực tiếp tệp tin `GramDrive.exe` để mở ứng dụng (Không cần cài đặt Python hay các thư viện phụ thuộc).
+
+---
+
+### Cách 2: Chạy từ Mã nguồn (Cho Lập trình viên)
+
+**1. Clone dự án về máy tính:**
+```bash
+git clone https://github.com/tomyrese/gramdrive.git
+cd gramdrive
+```
+
+**2. Cài đặt các thư viện phụ thuộc:**
+```bash
+pip install -r requirements.txt
+```
+
+**3. Khởi chạy ứng dụng:**
 ```bash
 python main.py
 ```
 
-### Bước 4: Thiết lập kết nối đám mây
-1. Truy cập vào trang **Settings** (Cài đặt) trên giao diện GramDrive.
-2. Dán mã **Bot Token** của bạn vào ô nhập liệu.
-3. Bấm **Bắt đầu lắng nghe** (Start Bot Listener).
-4. Mở Telegram, truy cập vào Bot cá nhân của bạn và gửi tin nhắn lệnh `/id`. Bot sẽ gửi trả lại mã số **Chat ID** của bạn.
-5. Sao chép và dán mã Chat ID đó vào ô **Chat ID** trên trang Cài đặt ứng dụng.
-6. Bấm **Test Bot Connection** (Kiểm tra kết nối Bot). Màn hình sẽ hiện popup thông báo kết nối thành công và tự động kích hoạt sidebar về trạng thái **Hoạt động (Active)**.
-7. Tùy chỉnh các cấu hình bảo mật, kích thước phân đoạn và bấm **Save Settings** (Lưu cài đặt).
+---
+
+## ⚙️ Quy trình Thiết Lập Cài Đặt Chi Tiết
+
+Để ứng dụng GramDrive kết nối và hoạt động chính xác với ổ đĩa Telegram của bạn, hãy làm theo các bước dưới đây:
+
+### Bước 1: Tạo Telegram Bot cá nhân
+1. Mở ứng dụng Telegram, tìm kiếm tài khoản **@BotFather** (tài khoản bot chính chủ của Telegram có tích xanh).
+2. Gửi lệnh `/newbot` và thực hiện theo hướng dẫn để đặt tên hiển thị và tên người dùng (username) cho Bot của bạn.
+3. Lưu lại chuỗi ký tự **Bot Token** được cấp (Ví dụ: `1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ`).
+
+### Bước 2: Cấu hình trên GramDrive
+1. Khởi chạy GramDrive, truy cập vào menu **Cài đặt** (Settings) ở thanh menu bên trái.
+2. Dán mã **Bot Token** bạn vừa tạo ở Bước 1 vào ô nhập liệu tương ứng.
+3. Nhấp chọn nút **Bắt đầu lắng nghe** (Start Bot Listener).
+4. Mở ứng dụng Telegram trên điện thoại hoặc máy tính, truy cập vào Bot cá nhân của bạn và nhấn **Start** hoặc gửi tin nhắn lệnh `/id`.
+5. GramDrive sẽ tự động bắt Chat ID của bạn và hiển thị lên ô **Chat ID** trên màn hình.
+6. Nhấp chọn nút **Kiểm tra kết nối** (Test Connection). Một thông báo popup chúc mừng kết nối thành công sẽ hiển thị, đồng thời trạng thái Sidebar sẽ chuyển sang màu xanh lá **Hoạt động (Active)**.
+
+### Bước 3: Lưu trữ cấu hình và Trải nghiệm
+1. Tùy chỉnh các thông số:
+   - **Mã hóa dữ liệu**: Tích chọn và đặt mật khẩu Master Key nếu muốn bảo mật tệp tin tuyệt đối.
+   - **Kích thước phân đoạn (Chunk size)**: Chọn dung lượng tệp tin phân đoạn mong muốn (1 GB - 10 GB). *Lưu ý: Giới hạn mặc định của bot Telegram thông thường là 50MB. Bạn cần thiết lập Local Bot API Server của riêng mình để sử dụng các mốc phân đoạn GB lớn hơn.*
+   - **Ngôn ngữ**: Chọn ngôn ngữ Tiếng Việt hoặc English.
+2. Nhấn **Lưu cài đặt** (Save Settings).
+3. Bây giờ bạn đã có thể chuyển sang trang **Explorer** để kéo thả tệp tin hoặc duyệt các tệp tin lưu trữ đám mây!
 
 ---
 
-## Cấu trúc thư mục dự án
+## 📂 Cấu Trúc Mã Nguồn Dự Án
 
-```
+```text
 GramDrive/
 ├── config/
-│   └── themes/              # File phong cách QSS cho Light và Dark Mode
+│   └── themes/              # Các tệp định nghĩa giao diện QSS (Light / Dark Mode)
 ├── core/
-│   ├── cache_manager.py     # Quản lý bộ nhớ đệm và dọn dẹp file tạm
-│   ├── chunk_manager.py     # Phân tách và ghép nối tệp tin
-│   ├── database.py          # Quản lý cơ sở dữ liệu SQLite cục bộ
-│   ├── downloader.py        # Tiến trình tải xuống tệp nền
-│   ├── encryptor.py         # Module mã hóa AES-256-CBC
-│   ├── file_manager.py      # Bộ điều phối trung tâm tệp tin và AI Scan
-│   ├── telegram_client.py   # Client API kết nối Telegram Bot và Poller
-│   └── uploader.py          # Tiến trình tải lên tệp nền
+│   ├── cache_manager.py     # Quản lý thư mục tạm và tự động dọn dẹp cache
+│   ├── chunk_manager.py     # Phân mảnh tệp tin lớn và lắp ráp lại khi tải xuống
+│   ├── database.py          # Quản lý cơ sở dữ liệu SQLite cục bộ (Cài đặt & Metadata)
+│   ├── downloader.py        # Tiến trình xử lý tải xuống tệp nền đa luồng
+│   ├── encryptor.py         # Mã hóa và giải mã tệp tin AES-256-CBC
+│   ├── file_manager.py      # Trình điều phối trung tâm dữ liệu và quét trạng thái AI
+│   ├── telegram_client.py   # Xử lý kết nối API Telegram, tải tệp và Bot Listener
+│   └── uploader.py          # Tiến trình xử lý tải lên tệp nền đa luồng
 ├── gui/
-│   ├── assets/              # Tài nguyên hình ảnh, biểu tượng logo
-│   ├── dashboard_page.py    # Trang bảng điều khiển thống kê dung lượng
-│   ├── download_page.py     # Trang hàng chờ tải xuống tệp tin
-│   ├── explorer_page.py     # Trang duyệt, tìm kiếm, xuất nhập tệp tin
-│   ├── main_window.py       # Khung ứng dụng chính không viền
-│   ├── settings_page.py     # Trang quản lý cấu hình và kết nối
-│   ├── translations.py      # Từ điển đa ngôn ngữ động và Popup custom
-│   └── upload_page.py       # Trang kéo thả tải tệp tin lên
-├── database/                # Thư mục chứa sqlite database (.gitkeep)
-├── temp/                    # Thư mục chứa file tạm khi tách/ghép (.gitkeep)
-├── logs/                    # Thư mục chứa file logs (.gitkeep)
-├── main.py                  # Điểm khởi chạy ứng dụng (Entrypoint)
-├── requirements.txt         # File mô tả thư viện phụ thuộc
-├── .gitignore               # Cấu hình bỏ qua tệp tin rác khi git push
-└── README.md                # Tài liệu hướng dẫn sử dụng này
+│   ├── dashboard_page.py    # Trang thống kê biểu đồ tròn, dung lượng và tệp tin
+│   ├── download_page.py     # Trang hiển thị hàng chờ tải xuống tệp tin
+│   ├── explorer_page.py     # Trang duyệt tệp tin, tìm kiếm, xuất/nhập sao lưu
+│   ├── main_window.py       # Khung giao diện chính tràn viền (Acrylic Glass Shell)
+│   ├── settings_page.py     # Trang cấu hình Bot Token, Chat ID, Mã hóa, Ngôn ngữ
+│   ├── translations.py      # Bộ dịch đa ngôn ngữ và các lớp Hộp thoại tùy chỉnh
+│   └── upload_page.py       # Trang kéo thả và chọn tệp tin tải lên đám mây
+├── database/                # Thư mục lưu cơ sở dữ liệu SQLite (.gitkeep)
+├── temp/                    # Thư mục chứa các phân đoạn tệp tin tạm (.gitkeep)
+├── logs/                    # Thư mục ghi nhận nhật ký hệ thống (.gitkeep)
+├── main.py                  # Điểm khởi chạy ứng dụng (Entrypoint + Splash Screen)
+├── requirements.txt         # Danh sách thư viện Python phụ thuộc
+├── icon.ico                 # Biểu tượng của ứng dụng
+├── .gitignore               # Tệp tin cấu hình bỏ qua khi đẩy lên git
+└── README.md                # Hướng dẫn chi tiết này
 ```
+
+---
+
+## 🧰 Công Nghệ Sử Dụng
+
+- **Ngôn ngữ**: Python 3.11+
+- **Framework GUI**: PySide6 (Qt for Python 6) với phong cách thiết kế QSS hiện đại.
+- **Xử lý bất đồng bộ**: `asyncio` & `qasync` (Kết hợp mượt mà vòng lặp sự kiện Qt với Asynchronous Python).
+- **Mã hóa**: `pycryptodome` (Cung cấp giải pháp mã hóa AES-256 chuẩn quân đội).
+- **Truy cập mạng**: `aiohttp` (Giúp tải lên/xuống các tệp dung lượng cực lớn song song tốc độ cao không nghẽn luồng GUI).
+- **Đóng gói**: `PyInstaller`.
+
+---
+
+## ⚠️ Lưu Ý Quan Trọng Về Giới Hạn Tệp Tin Của Telegram
+- Theo quy định mặc định của Telegram, các tài khoản Telegram Bot tiêu chuẩn bị giới hạn dung lượng tải lên/tải xuống tối đa là **50 MB** cho mỗi phân đoạn tệp tin. 
+- Để tận dụng tối đa tính năng phân tách phân đoạn kích thước lớn (1 GB - 10 GB) trên GramDrive, bạn cần tự triển khai và chạy một **Telegram Local Bot API Server** riêng (nâng giới hạn tải lên lên **2 GB** và tải xuống lên đến **20 GB**).
+- Ứng dụng hoạt động hoàn toàn cục bộ trực tiếp trên máy của bạn và không truyền bất kỳ thông tin nhạy cảm (như Bot Token, Key mã hóa) về bất kỳ máy chủ bên thứ ba nào.
+
+---
+
+## 📝 Giấy Phép (License)
+
+Dự án này được cấp phép dưới dạng **MIT License**. Bạn có toàn quyền sử dụng, sửa đổi và phân phối phục vụ mục đích cá nhân hoặc thương mại. Xem chi tiết tại tệp [LICENSE](LICENSE) (nếu có).
+
+*Chúc bạn có những trải nghiệm lưu trữ đám mây tuyệt vời và bảo mật cùng GramDrive!*
