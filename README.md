@@ -18,8 +18,10 @@
 - Hỗ trợ đổi giao diện **Sáng/Tối (Light/Dark Mode)** linh hoạt với sự hòa quyện màu sắc tinh tế, tránh hiện tượng chói mắt.
 - Bảng tệp tin dạng kính phẳng với thanh chọn liền mạch không đứt đoạn (Continuous Table Highlights).
 
-### 🚀 Lưu trữ Không Giới Hạn & Phân Mảnh Thông Minh
-- Tự động chia nhỏ các tệp tin lớn thành các phân đoạn (chunk) với kích thước tùy cấu hình (từ **1 GB đến 10 GB**) để phù hợp tối đa với các hệ thống Telegram Local Bot API.
+### 🚀 Lưu trữ Không Giới Hạn & Thuật toán Phân mảnh Thích ứng Thông minh
+- **Tự động Phân mảnh Thích ứng (Dynamic Auto-Chunking)**: Hệ thống tự động nhận diện loại máy chủ API bạn đang kết nối:
+  - **Official Telegram Bot API (`api.telegram.org`)**: Tự động giới hạn kích thước phân mảnh tối đa là **49 MB** (dưới hạn mức 50MB của Telegram) để đảm bảo tệp tải lên **không bao giờ bị lỗi**. Bạn có thể upload các tệp tin từ vài MB đến hàng chục GB hoàn toàn ổn định và mượt mà!
+  - **Local Bot API Server (Tự dựng)**: Tự động mở khóa giới hạn dung lượng phân đoạn lên đến **2 GB** (mốc tối đa Telegram cho phép) hoặc tùy chỉnh linh hoạt để đạt tốc độ tối đa.
 - Tự động ghép nối nguyên vẹn, kiểm tra tính toàn vẹn (checksum) các phân đoạn khi tải xuống.
 - Quản lý hàng chờ tải lên/tải xuống đa luồng chạy ngầm với thanh tiến độ thời gian thực.
 - Kéo và thả (Drag & Drop) tệp tin trực tiếp để tải lên vô cùng nhanh chóng.
@@ -35,7 +37,7 @@
 
 ### 🌐 Bản Địa Hóa Động Toàn Diện
 - Hỗ trợ song ngữ **Tiếng Việt** và **Tiếng Anh**.
-- Chuyển đổi ngôn ngữ tức thời không cần khởi động lại ứng dụng, đồng bộ toàn bộ giao diện từ menu, bảng dữ liệu, tiêu đề cho đến các hộp thoại cảnh báo.
+- Chuyển đổi ngôn ngữ tức thời không cần khởi động lại ứng dụng, đồng bộ toàn bộ giao diện từ menu, bảng dữ liệu, tiêu đề cho đến các hộp thoại cảnh báo và popup hệ thống.
 
 ### 📁 Quản lý Dữ liệu Tiện Lợi
 - **Dashboard**: Thống kê trực quan dung lượng đã sử dụng, số lượng tệp tin và biểu đồ danh mục định dạng tệp tin.
@@ -100,7 +102,7 @@ python main.py
 ### Bước 3: Lưu trữ cấu hình và Trải nghiệm
 1. Tùy chỉnh các thông số:
    - **Mã hóa dữ liệu**: Tích chọn và đặt mật khẩu Master Key nếu muốn bảo mật tệp tin tuyệt đối.
-   - **Kích thước phân đoạn (Chunk size)**: Chọn dung lượng tệp tin phân đoạn mong muốn (1 GB - 10 GB). *Lưu ý: Giới hạn mặc định của bot Telegram thông thường là 50MB. Bạn cần thiết lập Local Bot API Server của riêng mình để sử dụng các mốc phân đoạn GB lớn hơn.*
+   - **Kích thước phân đoạn (Chunk size)**: Chọn dung lượng tệp tin phân đoạn mong muốn. Hệ thống sẽ tự động clamp về mức an toàn 49MB khi phát hiện kết nối tới Official API.
    - **Ngôn ngữ**: Chọn ngôn ngữ Tiếng Việt hoặc English.
 2. Nhấn **Lưu cài đặt** (Save Settings).
 3. Bây giờ bạn đã có thể chuyển sang trang **Explorer** để kéo thả tệp tin hoặc duyệt các tệp tin lưu trữ đám mây!
@@ -121,13 +123,13 @@ GramDrive/
 │   ├── encryptor.py         # Mã hóa và giải mã tệp tin AES-256-CBC
 │   ├── file_manager.py      # Trình điều phối trung tâm dữ liệu và quét trạng thái AI
 │   ├── telegram_client.py   # Xử lý kết nối API Telegram, tải tệp và Bot Listener
-│   └── uploader.py          # Tiến trình xử lý tải lên tệp nền đa luồng
+│   └── uploader.py          # Tiến trình xử lý tải lên tệp nền đa luồng với Auto-Chunking thích ứng
 ├── gui/
 │   ├── dashboard_page.py    # Trang thống kê biểu đồ tròn, dung lượng và tệp tin
 │   ├── download_page.py     # Trang hiển thị hàng chờ tải xuống tệp tin
 │   ├── explorer_page.py     # Trang duyệt tệp tin, tìm kiếm, xuất/nhập sao lưu
 │   ├── main_window.py       # Khung giao diện chính tràn viền (Acrylic Glass Shell)
-│   ├── settings_page.py     # Trang cấu hình Bot Token, Chat ID, Mã hóa, Ngôn ngữ
+│   ├── settings_page.py     # Trang cấu hình Bot Token, Chat ID, Mã hóa, Ngôn ngữ, Chunk size mở rộng
 │   ├── translations.py      # Bộ dịch đa ngôn ngữ và các lớp Hộp thoại tùy chỉnh
 │   └── upload_page.py       # Trang kéo thả và chọn tệp tin tải lên đám mây
 ├── database/                # Thư mục lưu cơ sở dữ liệu SQLite (.gitkeep)
@@ -154,8 +156,8 @@ GramDrive/
 ---
 
 ## ⚠️ Lưu Ý Quan Trọng Về Giới Hạn Tệp Tin Của Telegram
-- Theo quy định mặc định của Telegram, các tài khoản Telegram Bot tiêu chuẩn bị giới hạn dung lượng tải lên/tải xuống tối đa là **50 MB** cho mỗi phân đoạn tệp tin. 
-- Để tận dụng tối đa tính năng phân tách phân đoạn kích thước lớn (1 GB - 10 GB) trên GramDrive, bạn cần tự triển khai và chạy một **Telegram Local Bot API Server** riêng (nâng giới hạn tải lên lên **2 GB** và tải xuống lên đến **20 GB**).
+- Với máy chủ Bot API mặc định của Telegram, hạn mức tối đa cho mỗi phần tệp tin tải lên là **50 MB**. Nhờ thuật toán **Dynamic Auto-Chunking** của GramDrive, các tệp tin lớn của bạn sẽ tự động phân tách thành các phần **49 MB** để vượt qua hạn mức này hoàn hảo mà không cần can thiệp thủ công.
+- Nếu bạn có máy chủ **Telegram Local Bot API Server** riêng, ứng dụng sẽ mở rộng giới hạn này để tải lên các phần tệp tin lớn lên tới **2 GB** (mốc tối đa Telegram cho phép).
 - Ứng dụng hoạt động hoàn toàn cục bộ trực tiếp trên máy của bạn và không truyền bất kỳ thông tin nhạy cảm (như Bot Token, Key mã hóa) về bất kỳ máy chủ bên thứ ba nào.
 
 ---
