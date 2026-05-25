@@ -123,7 +123,17 @@ class SettingsPage(QWidget):
         limits_layout.addWidget(self.limits_title_lbl)
 
         self.chunk_combo = QComboBox()
-        self.chunk_combo.addItems(["1 GB", "2 GB", "4 GB", "5 GB", "10 GB"])
+        self.chunk_combo.addItems([
+            "10 MB (Official Bot API)",
+            "20 MB (Official Bot API)",
+            "40 MB (Official Bot API - Recommended)",
+            "49 MB (Official Bot API - Max)",
+            "500 MB (Local Bot API)",
+            "1 GB (Local Bot API)",
+            "2 GB (Local Bot API - Recommended)",
+            "4 GB (Local Bot API - Premium Max)",
+            "8 GB (Local Bot API - Multi-part)"
+        ])
         self.lbl_chunk_size = QLabel()
         limits_layout.addWidget(self.lbl_chunk_size)
         limits_layout.addWidget(self.chunk_combo)
@@ -254,10 +264,23 @@ class SettingsPage(QWidget):
         self.enc_checkbox.setChecked(db.get_setting("encryption_enabled", "0") == "1")
         self.key_input.setText(db.get_setting("encryption_key", ""))
         
-        chunk_size = int(db.get_setting("chunk_size", str(2 * 1024 * 1024 * 1024)))
-        gb = chunk_size // (1024 * 1024 * 1024)
-        gb_map = {1: 0, 2: 1, 4: 2, 5: 3, 10: 4}
-        self.chunk_combo.setCurrentIndex(gb_map.get(gb, 1))
+        chunk_choices = [
+            10 * 1024 * 1024,
+            20 * 1024 * 1024,
+            40 * 1024 * 1024,
+            49 * 1024 * 1024,
+            500 * 1024 * 1024,
+            1 * 1024 * 1024 * 1024,
+            2 * 1024 * 1024 * 1024,
+            4 * 1024 * 1024 * 1024,
+            8 * 1024 * 1024 * 1024
+        ]
+        chunk_size = int(db.get_setting("chunk_size", str(40 * 1024 * 1024)))
+        try:
+            idx = chunk_choices.index(chunk_size)
+        except ValueError:
+            idx = 2
+        self.chunk_combo.setCurrentIndex(idx)
 
         lang = db.get_setting("language", "vi")
         self.lang_combo.setCurrentIndex(0 if lang == "vi" else 1)
@@ -301,9 +324,19 @@ class SettingsPage(QWidget):
         db.save_setting("encryption_enabled", "1" if self.enc_checkbox.isChecked() else "0")
         db.save_setting("encryption_key", self.key_input.text().strip())
 
-        gb_choices = [1, 2, 4, 5, 10]
-        gb = gb_choices[self.chunk_combo.currentIndex()]
-        db.save_setting("chunk_size", str(gb * 1024 * 1024 * 1024))
+        chunk_choices = [
+            10 * 1024 * 1024,
+            20 * 1024 * 1024,
+            40 * 1024 * 1024,
+            49 * 1024 * 1024,
+            500 * 1024 * 1024,
+            1 * 1024 * 1024 * 1024,
+            2 * 1024 * 1024 * 1024,
+            4 * 1024 * 1024 * 1024,
+            8 * 1024 * 1024 * 1024
+        ]
+        chosen_size = chunk_choices[self.chunk_combo.currentIndex()]
+        db.save_setting("chunk_size", str(chosen_size))
 
         db.save_setting("language", "vi" if self.lang_combo.currentIndex() == 0 else "en")
 

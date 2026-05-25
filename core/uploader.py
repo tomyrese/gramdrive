@@ -67,87 +67,103 @@ class Uploader:
     async def _upload_file(self, task: UploadTask, progress_cb: Optional[Callable[[UploadTask], None]]) -> None:
         encrypt_enabled = self.db.get_setting("encryption_enabled", "0") == "1"
         passphrase = self.db.get_setting("encryption_key", "")
-        chunk_size_setting = int(self.db.get_setting("chunk_size", str(2 * 1024 * 1024 * 1024)))
+        chunk_size_setting = int(self.db.get_setting("chunk_size", str(40 * 1024 * 1024)))
+
+        is_official_api = self.client.api_url.startswith("https://api.telegram.org")
+        if is_official_api:
+            effective_chunk_size = min(chunk_size_setting, 49 * 1024 * 1024)
+        else:
+            effective_chunk_size = chunk_size_setting
 
         temp_dir = "temp/upload"
         os.makedirs(temp_dir, exist_ok=True)
 
         work_file = task.file_path
         is_encrypted = 0
+        chunks = []
 
-        if encrypt_enabled and passphrase:
-            enc_file_path = os.path.join(temp_dir, f"{task.file_id}.enc")
-            task.status = "Encrypting"
-            if progress_cb:
-                progress_cb(task)
-            await asyncio.to_thread(Encryptor.encrypt_file, task.file_path, enc_file_path, passphrase)
-            work_file = enc_file_path
-            is_encrypted = 1
-
-        task.status = "Calculating Hash"
-        if progress_cb:
-            progress_cb(task)
-        file_hash = await asyncio.to_thread(ChunkManager.calculate_hash, task.file_path)
-
-        task.status = "Splitting File"
-        if progress_cb:
-            progress_cb(task)
-        chunks = await asyncio.to_thread(ChunkManager.split_file, work_file, chunk_size_setting, temp_dir)
-        total_chunks = len(chunks)
-
-        task.status = "Uploading"
-        start_time = time.time()
-        uploaded_bytes = 0
-
-        for chunk_path, chunk_index, chunk_hash in chunks:
-            if self.cancel_requested:
-                task.status = "Cancelled"
-                break
-
-            chunk_size = os.path.getsize(chunk_path)
-            
-            def chunk_progress(current, total):
-                nonlocal uploaded_bytes
-                current_uploaded = uploaded_bytes + current
-                task.progress = int((current_uploaded / task.size) * 100)
-                elapsed = time.time() - start_time
-                if elapsed > 0:
-                    task.speed = current_uploaded / elapsed
+        try:
+            if encrypt_enabled and passphrase:
+                enc_file_path = os.path.join(temp_dir, f"{task.file_id}.enc")
+                task.status = "Encrypting"
                 if progress_cb:
                     progress_cb(task)
+                await asyncio.to_thread(Encryptor.encrypt_file, task.file_path, enc_file_path, passphrase)
+                work_file = enc_file_path
+                is_encrypted = 1
 
-            res = await self.client.upload_chunk(chunk_path, chunk_progress)
-            if not res:
-                raise Exception(f"Failed to upload chunk {chunk_index}")
+            task.status = "Calculating Hash"
+            if progress_cb:
+                progress_cb(task)
+            file_hash = await asyncio.to_thread(ChunkManager.calculate_hash, task.file_path)
 
-            uploaded_bytes += chunk_size
-            
-            self.db.add_file({
-                "filename": os.path.basename(task.file_path),
-                "size": task.size,
-                "type": os.path.splitext(task.file_path)[1].lower().strip("."),
-                "upload_date": time.strftime("%Y-%m-%d %H:%M:%S"),
-                "telegram_message_id": res["message_id"],
-                "telegram_file_id": res["file_id"],
-                "chunk_index": chunk_index,
-                "total_chunks": total_chunks,
-                "encrypted": is_encrypted,
-                "hash": file_hash,
-                "local_cache_path": "",
-                "tags": "",
-                "favorite": 0
-            })
+            task.status = "Splitting File"
+            if progress_cb:
+                progress_cb(task)
+            chunks = await asyncio.to_thread(ChunkManager.split_file, work_file, effective_chunk_size, temp_dir)
+            total_chunks = len(chunks)
 
-            try:
-                os.remove(chunk_path)
-            except Exception:
-                pass
+            task.status = "Uploading"
+            start_time = time.time()
+            uploaded_bytes = 0
 
-        if encrypt_enabled and work_file != task.file_path:
-            try:
-                os.remove(work_file)
-            except Exception:
-                pass
+            for chunk_path, chunk_index, chunk_hash in chunks:
+                if self.cancel_requested:
+                    task.status = "Cancelled"
+                    break
+
+                chunk_size = os.path.getsize(chunk_path)
+                
+                def chunk_progress(current, total):
+                    nonlocal uploaded_bytes
+                    current_uploaded = uploaded_bytes + current
+                    task.progress = int((current_uploaded / task.size) * 100)
+                    elapsed = time.time() - start_time
+                    if elapsed > 0:
+                        task.speed = current_uploaded / elapsed
+                    if progress_cb:
+                        progress_cb(task)
+
+                res = await self.client.upload_chunk(chunk_path, chunk_progress)
+                if not res:
+                    raise Exception(f"Failed to upload chunk {chunk_index}")
+
+                uploaded_bytes += chunk_size
+                
+                self.db.add_file({
+                    "filename": os.path.basename(task.file_path),
+                    "size": task.size,
+                    "type": os.path.splitext(task.file_path)[1].lower().strip("."),
+                    "upload_date": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "telegram_message_id": res["message_id"],
+                    "telegram_file_id": res["file_id"],
+                    "chunk_index": chunk_index,
+                    "total_chunks": total_chunks,
+                    "encrypted": is_encrypted,
+                    "hash": file_hash,
+                    "local_cache_path": "",
+                    "tags": "",
+                    "favorite": 0
+                })
+
+                try:
+                    os.remove(chunk_path)
+                except Exception:
+                    pass
+
+        finally:
+            for chunk_path, _, _ in chunks:
+                if os.path.exists(chunk_path):
+                    try:
+                        os.remove(chunk_path)
+                    except Exception:
+                        pass
+            if encrypt_enabled and work_file != task.file_path:
+                if os.path.exists(work_file):
+                    try:
+                        os.remove(work_file)
+                    except Exception:
+                        pass
 
     def cancel_upload(self) -> None:
         self.cancel_requested = True
