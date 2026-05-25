@@ -45,7 +45,7 @@ def create_splash_pixmap() -> QPixmap:
     font_ver = QFont("Segoe UI", 10)
     painter.setFont(font_ver)
     painter.setPen(QColor("#55555d"))
-    painter.drawText(20, 260, 460, 30, Qt.AlignLeft, "v1.0.0 (Stable)")
+    painter.drawText(20, 260, 460, 30, Qt.AlignLeft, "v1.0.1 (Stable)")
     painter.drawText(20, 260, 460, 30, Qt.AlignRight, "Python 3.11.9 & PySide6")
     
     painter.end()
